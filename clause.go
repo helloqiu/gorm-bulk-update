@@ -43,3 +43,34 @@ func (fv FromValues) MergeClause(clause *clause.Clause) {
 	clause.Name = ""
 	clause.Expression = fv
 }
+
+// As is a clause which represents SQLs like "AS xxx_table(col1, col2)"
+type As struct {
+	Table   clause.Table
+	Columns []string
+}
+
+// Name from clause name
+func (As) Name() string {
+	return "AS"
+}
+
+// Build build from clause
+func (as As) Build(builder clause.Builder) {
+	builder.WriteString("AS ")
+	builder.WriteQuoted(as.Table)
+	builder.WriteByte('(')
+	for idx, col := range as.Columns {
+		if idx > 0 {
+			builder.WriteByte(',')
+		}
+		builder.WriteQuoted(col)
+	}
+	builder.WriteByte(')')
+}
+
+// MergeClause merge values clauses
+func (as As) MergeClause(clause *clause.Clause) {
+	clause.Name = ""
+	clause.Expression = as
+}

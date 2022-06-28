@@ -95,3 +95,39 @@ func TestFromValues(t *testing.T) {
 		})
 	}
 }
+
+func TestAs(t *testing.T) {
+	results := []struct {
+		Clauses []clause.Interface
+		Result  string
+		Vars    []interface{}
+	}{
+		{
+			[]clause.Interface{
+				clause.Update{},
+				AssignmentColumns([]string{"gorm", "helloqiu"}),
+				FromValues{
+					Values: [][]interface{}{
+						{
+							"gorm1", "helloqiu1",
+						},
+						{
+							"gorm2", "helloqiu2",
+						},
+					},
+				},
+				As{
+					Table:   clause.Table{Name: "tmp"},
+					Columns: []string{"gorm", "helloqiu"},
+				},
+			},
+			"UPDATE `users` SET `gorm`=`tmp`.`gorm`,`helloqiu`=`tmp`.`helloqiu` FROM VALUES ((?,?),(?,?)) AS `tmp`(`gorm`,`helloqiu`)",
+			[]interface{}{"gorm1", "helloqiu1", "gorm2", "helloqiu2"},
+		},
+	}
+	for idx, result := range results {
+		t.Run(fmt.Sprintf("case #%v", idx), func(t *testing.T) {
+			checkBuildClauses(t, result.Clauses, result.Result, result.Vars)
+		})
+	}
+}
