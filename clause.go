@@ -11,3 +11,35 @@ func AssignmentColumns(values []string) clause.Set {
 	}
 	return assignments
 }
+
+// FromValues is a clause which represents SQLs like "FROM VALUES ((a, b, c), (d, e, f))"
+type FromValues struct {
+	Values [][]interface{}
+}
+
+// Name from clause name
+func (FromValues) Name() string {
+	return "FROM VALUES"
+}
+
+// Build build from clause
+func (fv FromValues) Build(builder clause.Builder) {
+	builder.WriteString("FROM VALUES ")
+	builder.WriteByte('(')
+	for idx, value := range fv.Values {
+		if idx > 0 {
+			builder.WriteByte(',')
+		}
+
+		builder.WriteByte('(')
+		builder.AddVar(builder, value...)
+		builder.WriteByte(')')
+	}
+	builder.WriteByte(')')
+}
+
+// MergeClause merge values clauses
+func (fv FromValues) MergeClause(clause *clause.Clause) {
+	clause.Name = ""
+	clause.Expression = fv
+}
