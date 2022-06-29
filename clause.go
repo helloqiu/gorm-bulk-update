@@ -74,3 +74,21 @@ func (as As) MergeClause(clause *clause.Clause) {
 	clause.Name = ""
 	clause.Expression = as
 }
+
+// EqTableColumn is a clause which represents SQLs like "table1.col1 = table2.col2"
+type EqTableColumn struct {
+	SourceTable  clause.Table
+	TargetTable  clause.Table
+	SourceColumn clause.Column
+	TargetColumn clause.Column
+}
+
+func (eq EqTableColumn) Build(builder clause.Builder) {
+	builder.WriteQuoted(eq.SourceTable)
+	builder.WriteByte('.')
+	builder.WriteQuoted(eq.SourceColumn)
+	builder.WriteByte('=')
+	builder.WriteQuoted(eq.TargetTable)
+	builder.WriteByte('.')
+	builder.WriteQuoted(eq.TargetColumn)
+}
